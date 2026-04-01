@@ -52,6 +52,8 @@ if (isE2EMode && requestedUserDataDir) {
   app.setPath('userData', requestedUserDataDir);
 }
 
+app.setName('BoserClaw');
+
 // Disable GPU hardware acceleration globally for maximum stability across
 // all GPU configurations (no GPU, integrated, discrete).
 //
@@ -159,6 +161,7 @@ function createWindow(): BrowserWindow {
   const useCustomTitleBar = isWindows;
 
   const win = new BrowserWindow({
+    title: 'BoserClaw',
     width: 1280,
     height: 800,
     minWidth: 960,

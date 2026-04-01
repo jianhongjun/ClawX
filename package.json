@@ -26,9 +26,9 @@
             ]
         }
     },
-    "description": "ClawX - Graphical AI Assistant based on OpenClaw",
+    "description": "BoserClaw - Graphical AI Assistant based on OpenClaw",
     "main": "dist-electron/main/index.js",
-    "author": "ClawX Team",
+    "author": "BoserClaw Team",
     "license": "MIT",
     "private": true,
     "scripts": {
@@ -58,7 +58,7 @@
         "package": "vite build && zx scripts/bundle-openclaw.mjs && zx scripts/bundle-openclaw-plugins.mjs && zx scripts/bundle-preinstalled-skills.mjs",
         "package:mac": "pnpm run package && electron-builder --mac --publish never",
         "package:mac:local": "SKIP_PREINSTALLED_SKILLS=1 pnpm run package && electron-builder --mac --publish never",
-        "package:win": "pnpm run prep:win-binaries && pnpm run package && electron-builder --win --publish never",
+        "package:win": "node scripts/package-win.mjs",
         "package:linux": "pnpm run package && electron-builder --linux --publish never",
         "release": "pnpm run uv:download && pnpm run package && electron-builder --publish always",
         "version:patch": "pnpm version patch",

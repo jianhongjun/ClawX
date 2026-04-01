@@ -1,6 +1,6 @@
 appId: app.clawx.desktop
 productName: ClawX
-copyright: Copyright © 2026 ClawX
+copyright: Copyright © 2026 BoserClaw
 compression: maximum
 artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 
