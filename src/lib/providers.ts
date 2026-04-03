@@ -7,6 +7,7 @@
  */
 
 export const PROVIDER_TYPES = [
+  'boser',
   'anthropic',
   'openai',
   'google',
@@ -23,6 +24,7 @@ export const PROVIDER_TYPES = [
 export type ProviderType = (typeof PROVIDER_TYPES)[number];
 
 export const BUILTIN_PROVIDER_TYPES = [
+  'boser',
   'anthropic',
   'openai',
   'google',
@@ -128,6 +130,7 @@ import { providerIcons } from '@/assets/providers';
 
 /** All supported provider types with UI metadata */
 export const PROVIDER_TYPE_INFO: ProviderTypeInfo[] = [
+  { id: 'boser', name: 'Boser', icon: 'B', placeholder: 'sk-...', requiresApiKey: true, defaultBaseUrl: 'https://token.umeweb.cn/api/chat/v1', showBaseUrl: true, showModelId: true, modelIdPlaceholder: 'doubao-seed-2-0-pro-260215', defaultModelId: 'doubao-seed-2-0-pro-260215' },
   {
     id: 'anthropic',
     name: 'Anthropic',
@@ -194,9 +197,9 @@ export function getProviderIconUrl(type: ProviderType | string): string | undefi
   return providerIcons[type];
 }
 
-/** Whether a provider's logo needs CSS invert in dark mode (all logos are monochrome) */
-export function shouldInvertInDark(_type: ProviderType | string): boolean {
-  return true;
+/** Whether a provider's logo needs CSS invert in dark mode (monochrome logos only) */
+export function shouldInvertInDark(type: ProviderType | string): boolean {
+  return type !== 'boser';
 }
 
 /** Provider list shown in the Setup wizard */

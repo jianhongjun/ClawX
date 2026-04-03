@@ -7,6 +7,28 @@ import type {
 
 export const PROVIDER_DEFINITIONS: ProviderDefinition[] = [
   {
+    id: 'boser',
+    name: 'Boser',
+    icon: 'B',
+    placeholder: 'sk-...',
+    requiresApiKey: true,
+    defaultBaseUrl: 'https://token.umeweb.cn/api/chat/v1',
+    showBaseUrl: true,
+    showModelId: true,
+    modelIdPlaceholder: 'doubao-seed-2-0-pro-260215',
+    defaultModelId: 'doubao-seed-2-0-pro-260215',
+    category: 'compatible',
+    envVar: 'BOSER_API_KEY',
+    supportedAuthModes: ['api_key'],
+    defaultAuthMode: 'api_key',
+    supportsMultipleAccounts: true,
+    providerConfig: {
+      baseUrl: 'https://token.umeweb.cn/api/chat/v1',
+      api: 'openai-completions',
+      apiKeyEnv: 'BOSER_API_KEY',
+    },
+  },
+  {
     id: 'anthropic',
     name: 'Anthropic',
     icon: '🤖',

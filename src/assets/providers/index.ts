@@ -5,6 +5,7 @@ import openrouter from './openrouter.svg';
 import ark from './ark.svg';
 import moonshot from './moonshot.svg';
 import siliconflow from './siliconflow.svg';
+import boser from './boser.svg';
 import minimaxPortal from './minimax.svg';
 import qwenPortal from './qwen.svg';
 import ollama from './ollama.svg';
@@ -18,6 +19,7 @@ export const providerIcons: Record<string, string> = {
     ark,
     moonshot,
     siliconflow,
+    boser,
     'minimax-portal': minimaxPortal,
     'minimax-portal-cn': minimaxPortal,
     'qwen-portal': qwenPortal,

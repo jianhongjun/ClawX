@@ -83,9 +83,28 @@ function pruneChatEventDedupe(now: number): void {
 function buildChatEventDedupeKey(eventState: string, event: Record<string, unknown>): string | null {
   const runId = event.runId != null ? String(event.runId) : '';
   const sessionKey = event.sessionKey != null ? String(event.sessionKey) : '';
+  const rawState = eventState || (event.state != null ? String(event.state) : '');
+
+  // The same logical `final` is often delivered twice (e.g. gateway:notification vs
+  // gateway:chat-message) with different `seq`. Keys that include seq then fail to dedupe.
+  if (rawState === 'final' && runId && sessionKey) {
+    const msg = (event.message && typeof event.message === 'object')
+      ? event.message as Record<string, unknown>
+      : null;
+    const messageId = msg?.id != null ? String(msg.id) : '';
+    if (messageId) {
+      return `final|${runId}|${sessionKey}|id:${messageId}`;
+    }
+    const content = msg ? getMessageText(msg.content).trim() : '';
+    if (content) {
+      return `final|${runId}|${sessionKey}|c:${content.length}:${content}`;
+    }
+    return `final|${runId}|${sessionKey}|bare`;
+  }
+
   const seq = event.seq != null ? String(event.seq) : '';
-  if (runId || sessionKey || seq || eventState) {
-    return [runId, sessionKey, seq, eventState].join('|');
+  if (runId || sessionKey || seq || rawState) {
+    return [runId, sessionKey, seq, rawState].join('|');
   }
   const msg = (event.message && typeof event.message === 'object')
     ? event.message as Record<string, unknown>
@@ -94,7 +113,7 @@ function buildChatEventDedupeKey(eventState: string, event: Record<string, unkno
     const messageId = msg.id != null ? String(msg.id) : '';
     const stopReason = msg.stopReason ?? msg.stop_reason;
     if (messageId || stopReason) {
-      return `msg|${messageId}|${String(stopReason ?? '')}|${eventState}`;
+      return `msg|${messageId}|${String(stopReason ?? '')}|${rawState}`;
     }
   }
   return null;
@@ -1839,9 +1858,19 @@ export const useChatStore = create<ChatState>((set, get) => ({
               : { ...finalMsg, role: (finalMsg.role || 'assistant') as RawMessage['role'], id: msgId };
             const clearPendingImages = { pendingToolImages: [] as AttachedFileMeta[] };
 
+            // Same assistant text appended twice when two `final` events slip through with
+            // different message ids (e.g. duplicate upstream delivery).
+            const newAssistantText = hasOutput && !toolOnly
+              ? getMessageText(finalMsg.content).trim()
+              : '';
+            const last = s.messages.length > 0 ? s.messages[s.messages.length - 1] : null;
+            const duplicateConsecutiveAssistant = newAssistantText.length > 0
+              && last?.role === 'assistant'
+              && getMessageText(last.content).trim() === newAssistantText;
+
             // Check if message already exists (prevent duplicates)
             const alreadyExists = s.messages.some(m => m.id === msgId);
-            if (alreadyExists) {
+            if (alreadyExists || duplicateConsecutiveAssistant) {
               return toolOnly ? {
                 streamingText: '',
                 streamingMessage: null,
