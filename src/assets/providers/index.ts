@@ -22,7 +22,7 @@ export const providerIcons: Record<string, string> = {
     boser,
     'minimax-portal': minimaxPortal,
     'minimax-portal-cn': minimaxPortal,
-    'qwen-portal': qwenPortal,
+    'modelstudio': qwenPortal,
     ollama,
     custom,
 };

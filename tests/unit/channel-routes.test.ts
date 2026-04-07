@@ -18,7 +18,9 @@ vi.mock('@electron/utils/channel-config', () => ({
   deleteChannelConfig: vi.fn(),
   getChannelFormValues: vi.fn(),
   listConfiguredChannelAccounts: (...args: unknown[]) => listConfiguredChannelAccountsMock(...args),
+  listConfiguredChannelAccountsFromConfig: (...args: unknown[]) => listConfiguredChannelAccountsMock(...args),
   listConfiguredChannels: (...args: unknown[]) => listConfiguredChannelsMock(...args),
+  listConfiguredChannelsFromConfig: (...args: unknown[]) => listConfiguredChannelsMock(...args),
   readOpenClawConfig: (...args: unknown[]) => readOpenClawConfigMock(...args),
   saveChannelConfig: vi.fn(),
   setChannelDefaultAccount: vi.fn(),
@@ -32,12 +34,12 @@ vi.mock('@electron/utils/agent-config', () => ({
   clearAllBindingsForChannel: vi.fn(),
   clearChannelBinding: vi.fn(),
   listAgentsSnapshot: (...args: unknown[]) => listAgentsSnapshotMock(...args),
+  listAgentsSnapshotFromConfig: (...args: unknown[]) => listAgentsSnapshotMock(...args),
 }));
 
 vi.mock('@electron/utils/plugin-install', () => ({
   ensureDingTalkPluginInstalled: vi.fn(),
   ensureFeishuPluginInstalled: vi.fn(),
-  ensureQQBotPluginInstalled: vi.fn(),
   ensureWeChatPluginInstalled: vi.fn(),
   ensureWeComPluginInstalled: vi.fn(),
 }));
@@ -160,7 +162,7 @@ describe('handleChannelRoutes', () => {
     const handled = await handleChannelRoutes(
       { method: 'GET' } as IncomingMessage,
       {} as ServerResponse,
-      new URL('http://127.0.0.1:3210/api/channels/accounts'),
+      new URL('http://127.0.0.1:13210/api/channels/accounts'),
       {
         gatewayManager: {
           rpc,
@@ -172,7 +174,7 @@ describe('handleChannelRoutes', () => {
     );
 
     expect(handled).toBe(true);
-    expect(rpc).toHaveBeenCalledWith('channels.status', { probe: true });
+    expect(rpc).toHaveBeenCalledWith('channels.status', { probe: false }, 8000);
     expect(sendJsonMock).toHaveBeenCalledWith(
       expect.anything(),
       200,
@@ -242,7 +244,7 @@ describe('handleChannelRoutes', () => {
     await handleChannelRoutes(
       { method: 'GET' } as IncomingMessage,
       {} as ServerResponse,
-      new URL('http://127.0.0.1:3210/api/channels/accounts'),
+      new URL('http://127.0.0.1:13210/api/channels/accounts'),
       {
         gatewayManager: {
           rpc,
@@ -297,7 +299,7 @@ describe('handleChannelRoutes', () => {
     const handled = await handleChannelRoutes(
       { method: 'GET' } as IncomingMessage,
       {} as ServerResponse,
-      new URL('http://127.0.0.1:3210/api/channels/targets?channelType=qqbot&accountId=default'),
+      new URL('http://127.0.0.1:13210/api/channels/targets?channelType=qqbot&accountId=default'),
       {
         gatewayManager: {
           rpc: vi.fn(),
@@ -411,7 +413,7 @@ describe('handleChannelRoutes', () => {
     const handled = await handleChannelRoutes(
       { method: 'GET' } as IncomingMessage,
       {} as ServerResponse,
-      new URL('http://127.0.0.1:3210/api/channels/targets?channelType=feishu&accountId=default'),
+      new URL('http://127.0.0.1:13210/api/channels/targets?channelType=feishu&accountId=default'),
       {
         gatewayManager: {
           rpc: vi.fn(),
@@ -470,7 +472,7 @@ describe('handleChannelRoutes', () => {
     const handled = await handleChannelRoutes(
       { method: 'GET' } as IncomingMessage,
       {} as ServerResponse,
-      new URL('http://127.0.0.1:3210/api/channels/targets?channelType=wecom&accountId=default'),
+      new URL('http://127.0.0.1:13210/api/channels/targets?channelType=wecom&accountId=default'),
       {
         gatewayManager: {
           rpc: vi.fn(),
@@ -520,7 +522,7 @@ describe('handleChannelRoutes', () => {
     const handled = await handleChannelRoutes(
       { method: 'GET' } as IncomingMessage,
       {} as ServerResponse,
-      new URL('http://127.0.0.1:3210/api/channels/targets?channelType=dingtalk&accountId=default'),
+      new URL('http://127.0.0.1:13210/api/channels/targets?channelType=dingtalk&accountId=default'),
       {
         gatewayManager: {
           rpc: vi.fn(),
@@ -572,7 +574,7 @@ describe('handleChannelRoutes', () => {
     const handled = await handleChannelRoutes(
       { method: 'GET' } as IncomingMessage,
       {} as ServerResponse,
-      new URL('http://127.0.0.1:3210/api/channels/targets?channelType=wechat&accountId=wechat-bot'),
+      new URL('http://127.0.0.1:13210/api/channels/targets?channelType=wechat&accountId=wechat-bot'),
       {
         gatewayManager: {
           rpc: vi.fn(),

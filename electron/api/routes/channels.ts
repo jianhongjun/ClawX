@@ -6,8 +6,9 @@ import {
   deleteChannelConfig,
   cleanupDanglingWeChatPluginState,
   getChannelFormValues,
-  listConfiguredChannelAccounts,
+  listConfiguredChannelAccountsFromConfig,
   listConfiguredChannels,
+  listConfiguredChannelsFromConfig,
   readOpenClawConfig,
   saveChannelConfig,
   setChannelDefaultAccount,
@@ -20,11 +21,11 @@ import {
   clearAllBindingsForChannel,
   clearChannelBinding,
   listAgentsSnapshot,
+  listAgentsSnapshotFromConfig,
 } from '../../utils/agent-config';
 import {
   ensureDingTalkPluginInstalled,
   ensureFeishuPluginInstalled,
-  ensureQQBotPluginInstalled,
   ensureWeChatPluginInstalled,
   ensureWeComPluginInstalled,
 } from '../../utils/plugin-install';
@@ -345,16 +346,21 @@ const CHANNEL_TARGET_CACHE_ENABLED = process.env.VITEST !== 'true';
 const channelTargetCache = new Map<string, { expiresAt: number; targets: ChannelTargetOptionView[] }>();
 
 async function buildChannelAccountsView(ctx: HostApiContext): Promise<ChannelAccountsView[]> {
-  const [configuredChannels, configuredAccounts, openClawConfig, agentsSnapshot] = await Promise.all([
-    listConfiguredChannels(),
-    listConfiguredChannelAccounts(),
-    readOpenClawConfig(),
-    listAgentsSnapshot(),
+  // Read config once and share across all sub-calls (was 5 readFile calls before).
+  const openClawConfig = await readOpenClawConfig();
+
+  const [configuredChannels, configuredAccounts, agentsSnapshot] = await Promise.all([
+    listConfiguredChannelsFromConfig(openClawConfig),
+    Promise.resolve(listConfiguredChannelAccountsFromConfig(openClawConfig)),
+    listAgentsSnapshotFromConfig(openClawConfig),
   ]);
 
   let gatewayStatus: GatewayChannelStatusPayload | null;
   try {
-    gatewayStatus = await ctx.gatewayManager.rpc<GatewayChannelStatusPayload>('channels.status', { probe: true });
+    // probe: false — use cached runtime state instead of active network probes
+    // per channel. Real-time status updates arrive via channel.status events.
+    // 8s timeout — fail fast when Gateway is busy with AI tasks.
+    gatewayStatus = await ctx.gatewayManager.rpc<GatewayChannelStatusPayload>('channels.status', { probe: false }, 8000);
   } catch {
     gatewayStatus = null;
   }
@@ -1198,13 +1204,7 @@ export async function handleChannelRoutes(
           return true;
         }
       }
-      if (storedChannelType === 'qqbot') {
-        const installResult = await ensureQQBotPluginInstalled();
-        if (!installResult.installed) {
-          sendJson(res, 500, { success: false, error: installResult.warning || 'QQ Bot plugin install failed' });
-          return true;
-        }
-      }
+      // QQBot is a built-in channel since OpenClaw 3.31 — no plugin install needed
       if (storedChannelType === 'feishu') {
         const installResult = await ensureFeishuPluginInstalled();
         if (!installResult.installed) {
