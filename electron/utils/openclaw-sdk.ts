@@ -30,24 +30,6 @@ function requireOpenClawSdk(subpath: string): Record<string, unknown> {
   }
 }
 
-/** Tries subpaths in order — OpenClaw versions differ (e.g. telegram vs telegram-surface). */
-function requireOpenClawSdkOneOf(subpaths: string[]): Record<string, unknown> {
-  let lastErr: unknown;
-  for (const subpath of subpaths) {
-    try {
-      return _openclawSdkRequire(subpath);
-    } catch (e) {
-      lastErr = e;
-    }
-    try {
-      return _projectSdkRequire(subpath);
-    } catch (e) {
-      lastErr = e;
-    }
-  }
-  throw lastErr;
-}
-
 // --- Channel SDK dynamic imports ---
 const _discordSdk = requireOpenClawSdk('openclaw/plugin-sdk/discord') as {
   listDiscordDirectoryGroupsFromConfig: (...args: unknown[]) => Promise<unknown[]>;
@@ -55,10 +37,9 @@ const _discordSdk = requireOpenClawSdk('openclaw/plugin-sdk/discord') as {
   normalizeDiscordMessagingTarget: (target: string) => string | undefined;
 };
 
-const _telegramSdk = requireOpenClawSdkOneOf([
-  'openclaw/plugin-sdk/telegram',
-  'openclaw/plugin-sdk/telegram-surface',
-]) as {
+// Keep in sync with F:\ts\ClawX: only telegram-surface. The legacy `telegram` export
+// can pull deps that break `eventemitter3` ESM/CJS interop under Electron 40 / Node 22.
+const _telegramSdk = requireOpenClawSdk('openclaw/plugin-sdk/telegram-surface') as {
   listTelegramDirectoryGroupsFromConfig: (...args: unknown[]) => Promise<unknown[]>;
   listTelegramDirectoryPeersFromConfig: (...args: unknown[]) => Promise<unknown[]>;
   normalizeTelegramMessagingTarget: (target: string) => string | undefined;
